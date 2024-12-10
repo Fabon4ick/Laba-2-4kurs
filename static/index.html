@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastAPI Client</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #e0f7fa;
+            color: #004d40;
+        }
+
+        header {
+            background-color: #004d40;
+            color: #e0f7fa;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        main {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1rem;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            color: #00796b;
+        }
+
+        section {
+            background: #f9fbe7;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        input, button {
+            padding: 0.5rem;
+            margin: 0.5rem -0.5rem;
+            border: 1px solid #004d40;
+            border-radius: 4px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        button {
+            background-color: #004d40;
+            color: #e0f7fa;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #00251a;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul li {
+            background: #f1f8e9;
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            border: 1px solid #c8e6c9;
+            border-radius: 4px;
+        }
+
+        label {
+            display: block;
+            margin: 0.5rem 0 0.25rem 0;
+            font-weight: bold;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .checkbox-label input {
+            margin-right: 0.5rem;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        section {
+            background: #f9fbe7;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        button {
+            background-color: #004d40;
+            color: #e0f7fa;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: auto;
+        }
+
+    </style>
+    <script>
+        let token = "";
+
+        async function login() {
+            const username = document.getElementById("login-username").value;
+            const password = document.getElementById("login-password").value;
+
+            const response = await fetch("/token", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: `username=${username}&password=${password}`
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                token = data.access_token;
+                alert("Login successful!");
+            } else {
+                alert("Login failed! Check your username and password.");
+            }
+        }
+
+        async function register() {
+            const username = document.getElementById("register-username").value;
+            const email = document.getElementById("register-email").value;
+            const fullName = document.getElementById("register-fullname").value;
+            const password = document.getElementById("register-password").value;
+
+            const response = await fetch("/register/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ username, email, full_name: fullName, password })
+            });
+
+            if (response.ok) {
+                alert("User registered successfully!");
+            } else {
+                alert("Failed to register user!");
+            }
+        }
+
+        async function fetchUsers() {
+            const response = await fetch("/users/", {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const users = await response.json();
+                const usersList = document.getElementById("users-list");
+                usersList.innerHTML = "";
+                users.forEach(user => {
+                    const li = document.createElement("li");
+                    li.textContent = `${user.id}: ${user.username} (${user.email})`;
+                    usersList.appendChild(li);
+                });
+            } else {
+                alert("Failed to fetch users!");
+            }
+        }
+
+        async function deleteUser() {
+            const userId = document.getElementById("delete-user-id").value;
+
+            const response = await fetch(`/users/${userId}`, {
+                method: "DELETE",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                alert("User deleted successfully!");
+            } else {
+                alert("Failed to delete user!");
+            }
+        }
+
+        async function updateUser() {
+            const userId = document.getElementById("update-user-id").value;
+            const username = document.getElementById("update-username").value;
+            const email = document.getElementById("update-email").value;
+            const fullName = document.getElementById("update-fullname").value;
+            const password = document.getElementById("update-password").value;
+            const disabled = document.getElementById("update-disabled").checked;
+
+            const response = await fetch(`/users/${userId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ username, email, full_name: fullName, password, disabled })
+            });
+
+            if (response.ok) {
+                alert("User updated successfully!");
+            } else {
+                alert("Failed to update user!");
+            }
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>FastAPI Client</h1>
+    </header>
+    <main>
+        <div class="grid-container">
+            <section>
+                <h2>Login</h2>
+                <label for="login-username">Username</label>
+                <input type="text" id="login-username" placeholder="Username">
+                <label for="login-password">Password</label>
+                <input type="password" id="login-password" placeholder="Password">
+                <div class="button-container">
+                    <button onclick="login()">Login</button>
+                </div>
+            </section>
+
+            <section>
+                <h2>Register</h2>
+                <label for="register-username">Username</label>
+                <input type="text" id="register-username" placeholder="Username">
+                <label for="register-email">Email</label>
+                <input type="email" id="register-email" placeholder="Email">
+                <label for="register-fullname">Full Name</label>
+                <input type="text" id="register-fullname" placeholder="Full Name">
+                <label for="register-password">Password</label>
+                <input type="password" id="register-password" placeholder="Password">
+                <div class="button-container">
+                    <button onclick="register()">Register</button>
+                </div>
+            </section>
+
+            <section>
+                <h2>Users</h2>
+                <div class="button-container">
+                    <button onclick="fetchUsers()">Fetch Users</button>
+                </div>
+                <ul id="users-list"></ul>
+            </section>
+
+            <section>
+                <h2>Delete User</h2>
+                <label for="delete-user-id">User ID</label>
+                <input type="text" id="delete-user-id" placeholder="User ID">
+                <div class="button-container">
+                    <button onclick="deleteUser()">Delete User</button>
+                </div>
+            </section>
+
+            <section>
+                <h2>Update User</h2>
+                <label for="update-user-id">User ID</label>
+                <input type="text" id="update-user-id" placeholder="User ID">
+                <label for="update-username">New Username</label>
+                <input type="text" id="update-username" placeholder="New Username">
+                <label for="update-email">New Email</label>
+                <input type="email" id="update-email" placeholder="New Email">
+                <label for="update-fullname">New Full Name</label>
+                <input type="text" id="update-fullname" placeholder="New Full Name">
+                <label for="update-password">New Password</label>
+                <input type="password" id="update-password" placeholder="New Password">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="update-disabled"> Disabled
+                </label>
+                <div class="button-container">
+                    <button onclick="updateUser()">Update User</button>
+                </div>
+            </section>
+        </div>
+    </main>
+</body>
+</html>
